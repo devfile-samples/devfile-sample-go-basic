@@ -1,3 +1,3 @@
 module github.com/devfile-samples/devfile-sample-go-basic
 
-go 1.16
+go 1.18
