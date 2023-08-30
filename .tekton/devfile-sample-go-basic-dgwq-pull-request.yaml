@@ -304,6 +304,26 @@ spec:
         operator: in
         values:
         - "false"
+    - name: preflight
+      params:
+      - name: image-url
+        value: $(tasks.build-container.results.IMAGE_URL)
+      runAfter:
+      - build-container
+      taskRef:
+        params:
+        - name: name
+          value: preflight
+        - name: bundle
+          value: quay.io/skattoju/preflight-tekton@sha256:5b26f2c222bf5054f8ce3a6405c955a56b1d903261ccf229d0cc764fcb2bd92c
+        - name: kind
+          value: task
+        resolver: bundles
+      when:
+      - input: $(params.skip-checks)
+        operator: in
+        values:
+        - "false"
     - name: sast-snyk-check
       runAfter:
       - clone-repository
