@@ -276,9 +276,6 @@ spec:
         operator: in
         values:
         - "false"
-      workspaces:
-      - name: test-ws
-        workspace: workspace
     - name: clair-scan
       params:
       - name: image-digest
@@ -312,7 +309,7 @@ spec:
         - name: name
           value: ecosystem-cert-preflight-checks
         - name: bundle
-          value: quay.io/opdev/preflight-tekton@sha256:6bffa7ed1d3cba4e237b802cdc7d036527b3cfd667bfb5f8bf5dc4277ad751e7
+          value: quay.io/opdev/preflight-tekton@sha256:fea153ee47a8b06efcb93f0b1a8e2462fde903406d2343b45ee12605601e8d6a
         - name: kind
           value: task
         resolver: bundles
