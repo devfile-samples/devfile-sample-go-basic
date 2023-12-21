@@ -27,6 +27,7 @@ parent:
       kubernetes:
         uri: kubernetes/deploy.yaml
         endpoints:
-        - name: http-8080
-          targetPort: 8080
-          path: /
+          - name: http-8080
+            targetPort: 8080
+            path: /
+            secure: true
