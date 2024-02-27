@@ -1,3 +1,3 @@
 # devfile-sample-go-basic
 
-Test changes
+Test changes 2
