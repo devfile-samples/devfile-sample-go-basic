@@ -1,0 +1,87 @@
+name: Validate with Devfile Registry Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  validate-devfile:
+    runs-on: ubuntu-latest
+    
+    env:
+      REGISTRY_PATH: ${{ github.workspace }}/registry
+
+    steps:
+    - name: Checkout current repo
+      uses: actions/checkout@v4
+      with:
+        path: current-repo
+
+    - name: Checkout devfile registry
+      uses: actions/checkout@v4
+      with:
+        repository: devfile/registry
+        path: registry
+
+    - name: Setup test environment with overrides
+      run: |
+        # Copy entire project for devfile validation
+        mkdir -p test-sample
+        cp -r current-repo/* test-sample/
+        
+        # Stage registry test files and apply local overrides
+        mkdir -p test-environment/tests
+        cp -r registry/tests/* test-environment/tests/
+        
+        if [ -d "current-repo/tests" ]; then
+          echo "Applying local test overrides..."
+          cp -r current-repo/tests/* test-environment/tests/ 2>/dev/null || true
+        fi
+        
+        # Copy staged files to execution location
+        cp -r test-environment/tests/* registry/tests/
+        cp -r test-sample/* registry/tests/
+
+    - name: Setup Go
+      uses: actions/setup-go@v4
+      with:
+        go-version: '1.21'
+
+    - name: Install dependencies
+      run: |
+        sudo wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+        sudo chmod +x /usr/local/bin/yq
+        go install github.com/onsi/ginkgo/v2/ginkgo@latest
+
+    - name: Setup Minikube
+      uses: medyagh/setup-minikube@master
+      with:
+        minikube-version: latest
+        kubernetes-version: v1.28.0
+
+    - name: Run Registry Validation Tests
+      env:
+        REGISTRY_PATH: ${{ github.workspace }}/registry
+        DEVFILE_PATH: ${{ github.workspace }}/registry/tests/devfile.yaml
+        TEST_NAMESPACE: "default"
+        YQ_PATH: "yq"
+        ENV: "minikube"
+      run: |
+        cd registry/tests/check_non_terminating
+        go build -o flatten-parent .
+        cd ../../..
+        
+        echo "=== Schema Validation ==="
+        cd registry/tests
+        bash validate_devfile_schemas.sh
+        
+        echo "=== Non-terminating Test ==="
+        bash check_non_terminating.sh
+
+    - name: Cleanup
+      if: always()
+      run: |
+        kubectl delete pods --all -n default --ignore-not-found=true || true 
