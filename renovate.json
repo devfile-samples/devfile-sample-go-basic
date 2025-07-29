@@ -11,6 +11,12 @@
       "groupName": "go dependencies",
       "groupSlug": "go-deps",
       "commitMessageTopic": "Go {{depName}}"
+    },
+    {
+      "matchManagers": ["dockerfile"],
+      "groupName": "dockerfile dependencies",
+      "groupSlug": "dockerfile-deps",
+      "commitMessageTopic": "Dockerfile {{depName}}"
     }
   ]
 }
